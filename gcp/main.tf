@@ -1,5 +1,15 @@
+terraform {
+  required_providers {
+    google = {
+      source = "hashicorp/google"
+      version = ">= 3.35.0"
+
+    }
+  }
+  required_version = ">= 0.13"
+}
+
 provider "google" {
-  version = "3.35.0"
 
   credentials = file("auth.json")
   batching {
