@@ -21,7 +21,7 @@ data "aws_ami" "ubuntu" {
 #################### IAM role creation for discovery ###################
 
 resource "aws_iam_role" "discovery_role" {
-  name = "discovery_role"
+  name = "${var.prefix}_discovery_role"
 
   assume_role_policy = <<-EOF
   {
@@ -41,7 +41,7 @@ resource "aws_iam_role" "discovery_role" {
 }
 
 resource "aws_iam_role_policy" "discovery_policy" {
-  name = "discovery_policy"
+  name = "${var.prefix}_discovery_policy"
   role = aws_iam_role.discovery_role.id
 
   policy = <<-EOF
@@ -60,9 +60,18 @@ resource "aws_iam_role_policy" "discovery_policy" {
   EOF
 }
 
-resource "aws_security_group" "sg" {
-  name = "test_sg"
+resource "aws_iam_instance_profile" "discovery_instance_profile" {
+  name = "${var.prefix}_discovery_instance_profile"
+  role = aws_iam_role.discovery_role.name
+}
 
+
+#################### Security Group for Allowing Access ###################
+
+resource "aws_security_group" "sg" {
+  name = "${var.prefix}_sg"
+
+  #Allow SSH
   ingress {
     from_port   = 22
     to_port     = 22
@@ -70,6 +79,7 @@ resource "aws_security_group" "sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  #Allow Hazelcast members to communicate
   ingress {
     from_port   = 5701
     to_port     = 5701
@@ -77,13 +87,13 @@ resource "aws_security_group" "sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  #Allow access to Management Center
     ingress {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
 
   # Allow outgoing traffic to anywhere.
   egress {
@@ -94,26 +104,23 @@ resource "aws_security_group" "sg" {
   }
 }
 
-resource "aws_iam_instance_profile" "discovery_instance_profile" {
-  name = "discovery_instance_profile"
-  role = aws_iam_role.discovery_role.name
-}
-
+#################### Key for Allowing SSH Access ###################
 resource "aws_key_pair" "keypair" {
-  key_name   = "id_rsa"
+  key_name   = "${var.prefix}_${var.aws_key_name}"
   public_key = file("${var.local_key_path}/${var.aws_key_name}.pub")
 }
-###########################################################################
+
+##################### Hazelcast Cluster Member Instances ###################
 
 resource "aws_instance" "hazelcast_member" {
   count                = var.member_count
   ami                  = data.aws_ami.ubuntu.id
   instance_type        = var.aws_instance_type
   iam_instance_profile = aws_iam_instance_profile.discovery_instance_profile.name
-   security_groups      = [aws_security_group.sg.name]
+  security_groups      = [aws_security_group.sg.name]
   key_name             = aws_key_pair.keypair.key_name
   tags = {
-    Name                 = "Hazelcast-AWS-Member-${count.index + 1}"
+    Name                 = "Hazelcast-AWS-Member-${count.index}"
     "${var.aws_tag_key}" = var.aws_tag_value
   }
 
@@ -121,7 +128,7 @@ resource "aws_instance" "hazelcast_member" {
     type        = "ssh"
     user        = "ubuntu"
     host        = self.public_ip
-    timeout     = "45s"
+    timeout     = "100s"
     agent       = false
     private_key = file("${var.local_key_path}/${var.aws_key_name}")
   }
@@ -138,9 +145,10 @@ resource "aws_instance" "hazelcast_member" {
 
   provisioner "remote-exec" {
     inline = [
+      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
       "sudo apt-get update",
       "sudo apt-get -y install openjdk-8-jdk wget",
-      "sleep 60"
+      "sleep 30"
     ]
   }
 
@@ -148,19 +156,21 @@ resource "aws_instance" "hazelcast_member" {
     inline = [
       "cd /home/ubuntu",
       "chmod 0755 start_aws_hazelcast_member.sh",
-      "./start_aws_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_aws_version} ${var.aws_region} ${var.aws_tag_key} ${var.aws_tag_value} ${var.aws_connection_retries}",
-      "sleep 30",
+      "./start_aws_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_aws_version} ${var.aws_region} ${var.aws_tag_key} ${var.aws_tag_value} ${var.aws_connection_retries} ${aws_iam_role.discovery_role.name}",
+      "sleep 10",
       "tail -n 10 ./logs/hazelcast.stdout.log"
     ]
   }
 }
 
+##################### Hazelcast Management Center ###################
+
 resource "aws_instance" "hazelcast_mancenter" {
   ami                  = data.aws_ami.ubuntu.id
   instance_type        = var.aws_instance_type
   iam_instance_profile = aws_iam_instance_profile.discovery_instance_profile.name
-   security_groups      = [aws_security_group.sg.name]
-   key_name             = aws_key_pair.keypair.key_name
+  security_groups      = [aws_security_group.sg.name]
+  key_name             = aws_key_pair.keypair.key_name
   tags = {
     Name                 = "Hazelcast-AWS-Management-Center"
     "${var.aws_tag_key}" = var.aws_tag_value
@@ -170,7 +180,7 @@ resource "aws_instance" "hazelcast_mancenter" {
     type        = "ssh"
     user        = "ubuntu"
     host        = self.public_ip
-    timeout     = "45s"
+    timeout     = "100s"
     agent       = false
     private_key = file("${var.local_key_path}/${var.aws_key_name}")
   }
@@ -187,10 +197,10 @@ resource "aws_instance" "hazelcast_mancenter" {
 
   provisioner "remote-exec" {
     inline = [
+      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
       "sudo apt-get update",
-      "sudo apt-get -y install openjdk-8-jdk wget",
-      "sudo apt install unzip",
-      "sleep 40"
+      "sudo apt-get -y install openjdk-8-jdk wget unzip",
+      "sleep 30"
     ]
   }
 
@@ -199,13 +209,9 @@ resource "aws_instance" "hazelcast_mancenter" {
       "cd /home/ubuntu",
       "chmod 0755 start_aws_hazelcast_management_center.sh",
       "./start_aws_hazelcast_management_center.sh ${var.hazelcast_mancenter_version}  ${var.aws_region} ${var.aws_tag_key} ${var.aws_tag_value} ",
-      "sleep 30",
+      "sleep 10",
       "tail -n 20 ./logs/mancenter.stdout.log"
       ]
   }
 }
 
-output "public_ip2" {
-  value       = aws_instance.hazelcast_mancenter.public_ip
-  description = "The public IP of the Hazelcast MANCENTER"
-}

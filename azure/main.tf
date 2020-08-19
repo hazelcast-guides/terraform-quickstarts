@@ -1,13 +1,13 @@
 
 # Configure the Microsoft Azure Provider.
 provider "azurerm" {
-  version = "2.1.0"
+  version = "=2.23.0"
   features {}
 }
 
 # Create a resource group
 resource "azurerm_resource_group" "rg" {
-  name     = "${var.prefix}_RG"
+  name     = "${var.prefix}_rg"
   location = var.location
 }
 
@@ -24,12 +24,12 @@ resource "azurerm_subnet" "subnet" {
   name                 = "${var.prefix}_subnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefix       = "10.0.1.0/24"
+  address_prefixes       = ["10.0.1.0/24"]
 }
 
 # Create public IP(s)
 resource "azurerm_public_ip" "publicip" {
-  count               = var.member_count
+  count               = var.member_count + 1
   name                = "${var.prefix}_publicip_${count.index}"
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
@@ -43,36 +43,38 @@ data "azurerm_subscription" "primary" {}
 resource "azurerm_user_assigned_identity" "hazelcast_reader" {
   resource_group_name = azurerm_resource_group.rg.name
   location            = var.location
-  name                = "${var.prefix}_reader"
+  name                = "${var.prefix}_reader_identity"
 }
 
 
-# resource "azurerm_role_definition" "reader" {
-#   name               = "reader-role"
-#   scope              = data.azurerm_subscription.primary.id
+resource "azurerm_role_definition" "reader" {
+  name               = "${var.prefix}_reader_role_definition"
+  scope              = data.azurerm_subscription.primary.id
 
-#   permissions {
-#     actions     = ["Microsoft.Network/virtualNetworks/Read"]
-#     not_actions = []
-#   }
+  permissions {
+    actions     = ["Microsoft.Network/networkInterfaces/Read",
+                   "Microsoft.Network/publicIPAddresses/Read",
+                  ]
+    not_actions = []
+  }
 
-#   assignable_scopes = [
-#    data.azurerm_subscription.primary.id
-#   ]
-# }
+  assignable_scopes = [
+   data.azurerm_subscription.primary.id
+  ]
+}
 
 
 #Assign role to the user assigned managed identity
 resource "azurerm_role_assignment" "reader" {
   scope                = data.azurerm_subscription.primary.id
   principal_id         = azurerm_user_assigned_identity.hazelcast_reader.principal_id
-  role_definition_name = "Reader"
-  #role_definition_id    = azurerm_role_definition.reader.id
+  #role_definition_name = "Reader"
+  role_definition_id    = azurerm_role_definition.reader.id
 }
 
 # Create network interface(s)
 resource "azurerm_network_interface" "nic" {
-  count               = var.member_count
+  count               = var.member_count + 1
   name                = "${var.prefix}_nic_${count.index}"
   location            = var.location
   resource_group_name = azurerm_resource_group.rg.name
@@ -81,20 +83,20 @@ resource "azurerm_network_interface" "nic" {
     name                          = "${var.prefix}_nicconfig_${count.index}"
     subnet_id                     = azurerm_subnet.subnet.id
     private_ip_address_allocation = "Static"
-    private_ip_address            = "10.0.1.${count.index + 5}"
+    private_ip_address            = "10.0.1.${count.index + 10}"
     public_ip_address_id          = azurerm_public_ip.publicip[count.index].id
   }
 }
 
-resource "azurerm_linux_virtual_machine" "vm" {
-  name                  = "${var.prefix}hazelcast${count.index}1"
+# Create Hazelcast member instances
+resource "azurerm_linux_virtual_machine" "hazelcast_member" {
   count                  =var.member_count
+  name                  = "${var.prefix}-member-${count.index}"
   location             = var.location
   resource_group_name   = azurerm_resource_group.rg.name
   network_interface_ids = [azurerm_network_interface.nic[count.index].id]
-  size                  = "Standard_F2"
-  admin_username        = var.username
-  computer_name         = "${var.prefix}Member${count.index}"
+  size                  = var.azure_instance_type
+  admin_username        = var.azure_ssh_user
   
   tags                  = var.tags
 
@@ -105,8 +107,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
   admin_ssh_key {
-    username   = var.username
-    public_key = file("~/.ssh/id_rsa.pub")
+    username   = var.azure_ssh_user
+    public_key = file("${var.local_key_path}/${var.azure_key_name}.pub")
   }
 
 
@@ -124,143 +126,121 @@ resource "azurerm_linux_virtual_machine" "vm" {
   }
 
 
-}
+  connection {
+    host        = azurerm_public_ip.publicip[count.index].ip_address
+    user        = var.azure_ssh_user
+    type        = "ssh"
+    private_key = file("${var.local_key_path}/${var.azure_key_name}")
+    timeout     = "60"
+    agent       = false
+  }
 
-resource "null_resource" "provisioning_vms" {
-    count = var.member_count
-    depends_on = [
-      azurerm_linux_virtual_machine.vm
+  provisioner "file" {
+    source      = "scripts/start_azure_hazelcast_member.sh"
+    destination = "/home/${var.azure_ssh_user}/start_azure_hazelcast_member.sh"
+  }
+
+  provisioner "file" {
+    source      = "hazelcast.yaml"
+    destination = "/home/${var.azure_ssh_user}/hazelcast.yaml"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
+      "sudo apt-get update",
+      "sudo apt-get -y install openjdk-8-jdk wget",
+      "sleep 30"
     ]
-    connection {
-      host        = azurerm_public_ip.publicip[count.index].ip_address
-      user        = var.username
-      type        = "ssh"
-      private_key = file("~/.ssh/id_rsa")
-      timeout     = "30s"
-      agent       = false
-    }
+  }
 
-    provisioner "remote-exec" {
-      inline = [
-        "mkdir -p /home/${var.username}/jars",
-        "mkdir -p /home/${var.username}/logs",
-        "sudo apt-get update",
-        "sudo apt-get -y install openjdk-8-jdk wget",
-        "sleep 30"
-      ]
-    }
-
-    provisioner "file" {
-        source      = "~/hz/hazelcast-4.1-SNAPSHOT.jar"
-        destination = "/home/${var.username}/jars/hazelcast-4.1-SNAPSHOT.jar"
-    }
-
-
-    provisioner "file" {
-        source      = "~/hz/hazelcast-azure.jar"
-        destination = "/home/${var.username}/jars/hazelcast-azure.jar"
-    }
-
-
-    provisioner "remote-exec" {
-      inline = [
-        "java -cp /home/${var.username}/jars/hazelcast-4.1-SNAPSHOT.jar:/home/${var.username}/jars/hazelcast-azure.jar -server com.hazelcast.core.server.HazelcastMemberStarter >> /home/${var.username}/logs/hazelcast.stderr.log 2>> /home/${var.username}/logs/hazelcast.stdout.log &",
-        "sleep 30",
-        "tail -n 10 /home/${var.username}/logs/hazelcast.stdout.log",
-        # "curl -H 'Metadata: True' http://169.254.169.254/metadata/instance?api-version=2020-06-01",
-        # "cat /etc/resolv.conf"
-      ]
-    }
-}
-resource "null_resource" "run_exec999" {
-    count = var.member_count
-    depends_on = [
-      azurerm_linux_virtual_machine.vm
+  provisioner "remote-exec" {
+    inline = [
+      "cd /home/${var.azure_ssh_user}",
+      "chmod 0755 start_azure_hazelcast_member.sh",
+      "./start_azure_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_azure_version} ",
+      "sleep 30",
+      "tail -n 10 ./logs/hazelcast.stdout.log"
     ]
-    connection {
-      host        = azurerm_public_ip.publicip[count.index].ip_address
-      user        = var.username
-      type        = "ssh"
-      private_key = file("~/.ssh/id_rsa")
-      timeout     = "30s"
-      agent       = false
-    }
+  }
 
-      provisioner "file" {
-        source      = "~/hz/hazelcast-azure.jar"
-        destination = "/home/${var.username}/jars/hazelcast-azure.jar"
-    }
 
-    provisioner "remote-exec" {
-      inline = [
-        "rm -rf /home/${var.username}/logs",
-        "mkdir -p /home/${var.username}/logs",
-        "java -cp /home/${var.username}/jars/hazelcast-4.1-SNAPSHOT.jar:/home/${var.username}/jars/hazelcast-azure.jar -server com.hazelcast.core.server.HazelcastMemberStarter >> /home/${var.username}/logs/hazelcast.stderr.log 2>> /home/${var.username}/logs/hazelcast.stdout.log &",
-        "sleep 30",
-        "tail -n 10 /home/${var.username}/logs/hazelcast.stdout.log",
-        # "curl -H 'Metadata: True' http://169.254.169.254/metadata/instance?api-version=2020-06-01",
-        # "cat /etc/resolv.conf"
-      ]
-    }
+
 }
 
+# Create Hazelcast Management Center
+resource "azurerm_linux_virtual_machine" "hazelcast_mancenter" {
+  name                  = "${var.prefix}-mancenter"
+  location             = var.location
+  resource_group_name   = azurerm_resource_group.rg.name
+  network_interface_ids = [azurerm_network_interface.nic[var.member_count].id]
+  size                  = "Standard_B1ms"
+  admin_username        = var.azure_ssh_user
+  
+  tags                  = var.tags
+
+  os_disk {
+    name                 = "OsDisk"
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  admin_ssh_key {
+    username   = var.azure_ssh_user
+    public_key = file("${var.local_key_path}/${var.azure_key_name}.pub")
+  }
 
 
-# resource "null_resource" "run_exec2" {
-#     count = var.member_count
-#     depends_on = [
-#       azurerm_linux_virtual_machine.vm
-#     ]
-#     connection {
-#       host        = azurerm_public_ip.publicip[count.index].ip_address
-#       user        = var.username
-#       type        = "ssh"
-#       private_key = file("~/.ssh/id_rsa")
-#       timeout     = "30s"
-#       agent       = false
-#     }
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "16.04-LTS"
+    version   = "latest"
+  }
 
 
-#     provisioner "remote-exec" {
-#       inline = [
-#         "rm /home/ubuntu/logs/hazelcast.stdout.log",
-#         "rm /home/ubuntu/logs/hazelcast.stderr.log",
-#         "nohup java -cp /home/${var.username}/jars/hazelcast-4.1-SNAPSHOT.jar:/home/${var.username}/jars/hazelcast-azure.jar -server com.hazelcast.core.server.HazelcastMemberStarter >> /home/${var.username}/logs/hazelcast.stderr.log 2>> /home/${var.username}/logs/hazelcast.stdout.log &",
-#         "sleep 30",
-#         "tail -n 10 /home/${var.username}/logs/hazelcast.stdout.log" ,
-#         "curl -H 'Metadata: True' http://169.254.169.254/metadata/instance?api-version=2020-06-01",
-#         "cat /etc/resolv.conf"
-#       ]
-#     }
-# }
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.hazelcast_reader.id]
+  }
 
 
-  # provisioner "file" {
-  #   source      = "scripts/start_azure_hazelcast_member.sh"
-  #   destination = "/home/${var.username}/start_azure_hazelcast_member.sh"
-  # }
+  connection {
+    host        = azurerm_public_ip.publicip[var.member_count].ip_address
+    user        = var.azure_ssh_user
+    type        = "ssh"
+    private_key = file("${var.local_key_path}/${var.azure_key_name}")
+    timeout     = "60"
+    agent       = false
+  }
 
-  # provisioner "file" {
-  #   source      = "hazelcast.yaml"
-  #   destination = "/home/${var.username}/hazelcast.yaml"
-  # }
+  provisioner "file" {
+    source      = "scripts/start_azure_hazelcast_management_center.sh"
+    destination = "/home/${var.azure_ssh_user}/start_azure_hazelcast_management_center.sh"
+  }
 
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "sudo apt-get update",
-  #     "sudo apt-get -y install openjdk-8-jdk wget",
-  #     "sleep 30"
-  #   ]
-  # }
+  provisioner "file" {
+    source      = "hazelcast-client.yaml"
+    destination = "/home/${var.azure_ssh_user}/hazelcast-client.yaml"
+  }
 
-  # provisioner "remote-exec" {
-  #   inline = [
-  #     "cd /home/${var.username}",
-  #     "chmod 0755 start_azure_hazelcast_member.sh",
-  #     "./start_azure_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_azure_version} tag-name=hazelcast",
-  #     "sleep 30",
-  #     "tail -n 10 ./logs/hazelcast.stdout.log"
-  #   ]
-  # }
+  provisioner "remote-exec" {
+    inline = [
+      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
+      "sudo apt-get update",
+      "sudo apt-get -y install openjdk-8-jdk wget unzip",
+      "sleep 30"
+    ]
+  }
 
+  provisioner "remote-exec" {
+    inline = [
+      "cd /home/${var.azure_ssh_user}",
+      "chmod 0755 start_azure_hazelcast_management_center.sh",
+      "./start_azure_hazelcast_management_center.sh ${var.hazelcast_mancenter_version} ",
+      "sleep 30",
+      "tail -n 10 ./logs/mancenter.stdout.log"
+    ]
+  }
 
+}

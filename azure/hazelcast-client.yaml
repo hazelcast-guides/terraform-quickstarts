@@ -1,0 +1,4 @@
+hazelcast-client:
+  network:
+    azure:
+      enabled: true
