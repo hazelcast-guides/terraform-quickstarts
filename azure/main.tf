@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     azurerm = {
-      source = "hashicorp/azurerm"
+      source  = "hashicorp/azurerm"
       version = ">= 2.23.0"
     }
   }
@@ -32,7 +32,7 @@ resource "azurerm_subnet" "subnet" {
   name                 = "${var.prefix}_subnet"
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes       = ["10.0.1.0/24"]
+  address_prefixes     = ["10.0.1.0/24"]
 }
 
 # Create public IP(s)
@@ -56,28 +56,28 @@ resource "azurerm_user_assigned_identity" "hazelcast_reader" {
 
 
 resource "azurerm_role_definition" "reader" {
-  name               = "${var.prefix}_reader_role_definition"
-  scope              = data.azurerm_subscription.primary.id
+  name  = "${var.prefix}_reader_role_definition"
+  scope = data.azurerm_subscription.primary.id
 
   permissions {
-    actions     = ["Microsoft.Network/networkInterfaces/Read",
-                   "Microsoft.Network/publicIPAddresses/Read",
-                  ]
+    actions = ["Microsoft.Network/networkInterfaces/Read",
+      "Microsoft.Network/publicIPAddresses/Read",
+    ]
     not_actions = []
   }
 
   assignable_scopes = [
-   data.azurerm_subscription.primary.id
+    data.azurerm_subscription.primary.id
   ]
 }
 
 
 #Assign role to the user assigned managed identity
 resource "azurerm_role_assignment" "reader" {
-  scope                = data.azurerm_subscription.primary.id
-  principal_id         = azurerm_user_assigned_identity.hazelcast_reader.principal_id
+  scope        = data.azurerm_subscription.primary.id
+  principal_id = azurerm_user_assigned_identity.hazelcast_reader.principal_id
   #role_definition_name = "Reader"
-  role_definition_id    = azurerm_role_definition.reader.id
+  role_definition_id = azurerm_role_definition.reader.id
 }
 
 # Create network interface(s)
@@ -98,15 +98,15 @@ resource "azurerm_network_interface" "nic" {
 
 # Create Hazelcast member instances
 resource "azurerm_linux_virtual_machine" "hazelcast_member" {
-  count                  =var.member_count
+  count                 = var.member_count
   name                  = "${var.prefix}-member-${count.index}"
-  location             = var.location
+  location              = var.location
   resource_group_name   = azurerm_resource_group.rg.name
   network_interface_ids = [azurerm_network_interface.nic[count.index].id]
   size                  = var.azure_instance_type
   admin_username        = var.azure_ssh_user
-  
-  tags                  = var.tags
+
+  tags = var.tags
 
   os_disk {
     name                 = "OsDisk_${count.index}"
@@ -179,13 +179,13 @@ resource "azurerm_linux_virtual_machine" "hazelcast_member" {
 # Create Hazelcast Management Center
 resource "azurerm_linux_virtual_machine" "hazelcast_mancenter" {
   name                  = "${var.prefix}-mancenter"
-  location             = var.location
+  location              = var.location
   resource_group_name   = azurerm_resource_group.rg.name
   network_interface_ids = [azurerm_network_interface.nic[var.member_count].id]
   size                  = "Standard_B1ms"
   admin_username        = var.azure_ssh_user
-  
-  tags                  = var.tags
+
+  tags = var.tags
 
   os_disk {
     name                 = "OsDisk"

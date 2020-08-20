@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     aws = {
-      source = "hashicorp/aws"
+      source  = "hashicorp/aws"
       version = ">= 3.2.0"
     }
   }
@@ -12,7 +12,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-data "aws_ami" "ubuntu" {
+data "aws_ami" "image" {
   most_recent = true
 
   filter {
@@ -98,7 +98,7 @@ resource "aws_security_group" "sg" {
   }
 
   #Allow access to Management Center
-    ingress {
+  ingress {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -124,7 +124,7 @@ resource "aws_key_pair" "keypair" {
 
 resource "aws_instance" "hazelcast_member" {
   count                = var.member_count
-  ami                  = data.aws_ami.ubuntu.id
+  ami                  = data.aws_ami.image.id
   instance_type        = var.aws_instance_type
   iam_instance_profile = aws_iam_instance_profile.discovery_instance_profile.name
   security_groups      = [aws_security_group.sg.name]
@@ -136,7 +136,7 @@ resource "aws_instance" "hazelcast_member" {
 
   connection {
     type        = "ssh"
-    user        = "ubuntu"
+    user        = var.aws_ssh_user
     host        = self.public_ip
     timeout     = "100s"
     agent       = false
@@ -145,12 +145,12 @@ resource "aws_instance" "hazelcast_member" {
 
   provisioner "file" {
     source      = "scripts/start_aws_hazelcast_member.sh"
-    destination = "/home/ubuntu/start_aws_hazelcast_member.sh"
+    destination = "/home/${var.aws_ssh_user}/start_aws_hazelcast_member.sh"
   }
 
   provisioner "file" {
     source      = "hazelcast.yaml"
-    destination = "/home/ubuntu/hazelcast.yaml"
+    destination = "/home/${var.aws_ssh_user}/hazelcast.yaml"
   }
 
   provisioner "remote-exec" {
@@ -164,7 +164,7 @@ resource "aws_instance" "hazelcast_member" {
 
   provisioner "remote-exec" {
     inline = [
-      "cd /home/ubuntu",
+      "cd /home/${var.aws_ssh_user}",
       "chmod 0755 start_aws_hazelcast_member.sh",
       "./start_aws_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_aws_version} ${var.aws_region} ${var.aws_tag_key} ${var.aws_tag_value} ${var.aws_connection_retries} ${aws_iam_role.discovery_role.name}",
       "sleep 10",
@@ -176,7 +176,7 @@ resource "aws_instance" "hazelcast_member" {
 ##################### Hazelcast Management Center ###################
 
 resource "aws_instance" "hazelcast_mancenter" {
-  ami                  = data.aws_ami.ubuntu.id
+  ami                  = data.aws_ami.image.id
   instance_type        = var.aws_instance_type
   iam_instance_profile = aws_iam_instance_profile.discovery_instance_profile.name
   security_groups      = [aws_security_group.sg.name]
@@ -188,7 +188,7 @@ resource "aws_instance" "hazelcast_mancenter" {
 
   connection {
     type        = "ssh"
-    user        = "ubuntu"
+    user        = var.aws_ssh_user
     host        = self.public_ip
     timeout     = "100s"
     agent       = false
@@ -197,12 +197,12 @@ resource "aws_instance" "hazelcast_mancenter" {
 
   provisioner "file" {
     source      = "scripts/start_aws_hazelcast_management_center.sh"
-    destination = "/home/ubuntu/start_aws_hazelcast_management_center.sh"
+    destination = "/home/${var.aws_ssh_user}/start_aws_hazelcast_management_center.sh"
   }
 
   provisioner "file" {
     source      = "hazelcast-client.yaml"
-    destination = "/home/ubuntu/hazelcast-client.yaml"
+    destination = "/home/${var.aws_ssh_user}/hazelcast-client.yaml"
   }
 
   provisioner "remote-exec" {
@@ -216,12 +216,12 @@ resource "aws_instance" "hazelcast_mancenter" {
 
   provisioner "remote-exec" {
     inline = [
-      "cd /home/ubuntu",
+      "cd /home/${var.aws_ssh_user}",
       "chmod 0755 start_aws_hazelcast_management_center.sh",
       "./start_aws_hazelcast_management_center.sh ${var.hazelcast_mancenter_version}  ${var.aws_region} ${var.aws_tag_key} ${var.aws_tag_value} ",
       "sleep 10",
       "tail -n 20 ./logs/mancenter.stdout.log"
-      ]
+    ]
   }
 }
 

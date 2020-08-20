@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     google = {
-      source = "hashicorp/google"
+      source  = "hashicorp/google"
       version = ">= 3.35.0"
 
     }
@@ -11,11 +11,11 @@ terraform {
 
 provider "google" {
 
-  credentials = file("auth.json")
+  credentials = file("YOUR-KEY-FILE.json")
   batching {
     enable_batching = "false"
   }
-  project = var.project-id
+  project = var.project_id
   region  = var.region
   zone    = var.zone
 }
@@ -43,7 +43,7 @@ resource "google_compute_firewall" "firewall" {
   # Allow SSH, Hazelcast member communication and Hazelcat Management Center website
   allow {
     protocol = "tcp"
-    ports    = ["22", "5701-5707","8080"]
+    ports    = ["22", "5701-5707", "8080"]
   }
 
   allow {
@@ -75,18 +75,18 @@ resource "google_compute_instance" "hazelcast_member" {
     }
   }
 
-   service_account {
-    email = "terraform-hazelcast@boxwood-veld-282011.iam.gserviceaccount.com"
+  service_account {
+    email  = var.service_account_email
     scopes = ["cloud-platform"]
   }
 
   metadata = {
-    ssh-keys = "${var.gce_ssh_user}:${file("${var.local_key_path}/${var.gcp_key_name}.pub")}"
+    ssh-keys = "${var.gcp_ssh_user}:${file("${var.local_key_path}/${var.gcp_key_name}.pub")}"
   }
 
   connection {
-    host        = self.network_interface.0.access_config.0.nat_ip
-    user        = var.gce_ssh_user
+    host        = self.network_interface[0].access_config[0].nat_ip
+    user        = var.gcp_ssh_user
     type        = "ssh"
     private_key = file("${var.local_key_path}/${var.gcp_key_name}")
     timeout     = "60s"
@@ -94,17 +94,17 @@ resource "google_compute_instance" "hazelcast_member" {
   }
   provisioner "file" {
     source      = "scripts/start_gcp_hazelcast_member.sh"
-    destination = "/home/${var.gce_ssh_user}/start_gcp_hazelcast_member.sh"
+    destination = "/home/${var.gcp_ssh_user}/start_gcp_hazelcast_member.sh"
   }
 
   provisioner "file" {
     source      = "hazelcast.yaml"
-    destination = "/home/${var.gce_ssh_user}/hazelcast.yaml"
+    destination = "/home/${var.gcp_ssh_user}/hazelcast.yaml"
   }
 
   provisioner "remote-exec" {
     inline = [
-     # "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
+      # "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
       "sudo apt-get update",
       "sudo apt-get -y install openjdk-8-jdk wget",
       "sleep 5"
@@ -113,7 +113,7 @@ resource "google_compute_instance" "hazelcast_member" {
 
   provisioner "remote-exec" {
     inline = [
-      "cd /home/${var.gce_ssh_user}",
+      "cd /home/${var.gcp_ssh_user}",
       "chmod 0755 start_gcp_hazelcast_member.sh",
       "./start_gcp_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_gcp_version}",
       "sleep 10",
@@ -142,36 +142,36 @@ resource "google_compute_instance" "hazelcast_mancenter" {
     }
   }
 
-   service_account {
-    email = "terraform-hazelcast@boxwood-veld-282011.iam.gserviceaccount.com"
+  service_account {
+    email  = var.service_account_email
     scopes = ["cloud-platform"]
   }
 
   metadata = {
-    ssh-keys = "${var.gce_ssh_user}:${file(var.gce_ssh_pub_key_file)}"
+    ssh-keys = "${var.gcp_ssh_user}:${file("${var.local_key_path}/${var.gcp_key_name}.pub")}"
   }
 
   connection {
-    host        = self.network_interface.0.access_config.0.nat_ip
-    user        = var.gce_ssh_user
+    host        = self.network_interface[0].access_config[0].nat_ip
+    user        = var.gcp_ssh_user
     type        = "ssh"
-    private_key =  file("${var.local_key_path}/${var.gcp_key_name}")
+    private_key = file("${var.local_key_path}/${var.gcp_key_name}")
     timeout     = "60s"
     agent       = false
   }
   provisioner "file" {
     source      = "scripts/start_gcp_hazelcast_management_center.sh"
-    destination = "/home/${var.gce_ssh_user}/start_gcp_hazelcast_management_center.sh"
+    destination = "/home/${var.gcp_ssh_user}/start_gcp_hazelcast_management_center.sh"
   }
 
   provisioner "file" {
     source      = "hazelcast-client.yaml"
-    destination = "/home/${var.gce_ssh_user}/hazelcast-client.yaml"
+    destination = "/home/${var.gcp_ssh_user}/hazelcast-client.yaml"
   }
 
   provisioner "remote-exec" {
     inline = [
-     # "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
+      # "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
       "sudo apt-get update",
       "sudo apt-get -y install openjdk-8-jdk wget unzip",
       "sleep 5"
@@ -180,7 +180,7 @@ resource "google_compute_instance" "hazelcast_mancenter" {
 
   provisioner "remote-exec" {
     inline = [
-      "cd /home/${var.gce_ssh_user}",
+      "cd /home/${var.gcp_ssh_user}",
       "chmod 0755 start_gcp_hazelcast_management_center.sh",
       "./start_gcp_hazelcast_management_center.sh ${var.hazelcast_mancenter_version} ",
       "sleep 20",

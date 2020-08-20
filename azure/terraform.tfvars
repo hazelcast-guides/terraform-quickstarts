@@ -1,3 +1,26 @@
-azure_key_name = "id_rsa"
+# key name to be assigned to Azure Compute instances
+azure_key_name = #"id_rsa"
 
-local_key_path = "~/.ssh"
+# local path of private key file for SSH connection - local_key_path/azure_key_name
+local_key_path = #"~/.ssh"
+
+
+
+########### Optional ############
+location            = "central us"
+azure_instance_type = "Standard_B1ms"
+tags = {
+  tag-name = "hazelcast"
+}
+
+member_count = "2"
+
+prefix                      = "hazelcast"
+hazelcast_version           = "4.0.2"
+hazelcast_azure_version     = "2.0"
+hazelcast_mancenter_version = "4.2020.08"
+
+# Username to use when connecting to VMs.
+azure_ssh_user = "ubuntu"
+
+ 

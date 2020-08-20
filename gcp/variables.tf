@@ -8,53 +8,59 @@ variable "local_key_path" {
   type = string
 }
 
-variable "project-id" {
-  default = "boxwood-veld-282011"
+# Service account to give API access to Hazelcast members
+variable "service_account_email" {
+  type = string
 }
-variable "credentials_file" {
-  default = "auth3.json"
+
+variable "project_id" {
+  type    = string
+  default = null
 }
 
 variable "region" {
+  type = string
   default = "us-central1"
 }
 
 variable "zone" {
+  type    = string
   default = "us-central1-c"
 }
 
 variable "member_count" {
+  type    = number
   default = "2"
 }
 
-variable "gce_ssh_pub_key_file" {
-  default = "~/.ssh/id_rsa.pub"
-}
-
-variable "gce_ssh_user" {
+variable "gcp_ssh_user" {
+  type    = string
   default = "ubuntu"
 }
 
 variable "hazelcast_version" {
+  type    = string
   default = "4.0.2"
 }
 
 variable "hazelcast_gcp_version" {
+  type    = string
   default = "2.0.1"
 }
 
 variable "hazelcast_mancenter_version" {
-  type   = string
+  type    = string
   default = "4.2020.08"
 }
 
 variable "prefix" {
-  type   = string
+  type    = string
   default = "hazelcast"
 }
-
 
 variable "gcp_instance_type" {
   type    = string
   default = "f1-micro"
 }
+
+

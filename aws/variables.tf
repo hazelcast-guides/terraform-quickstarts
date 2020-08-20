@@ -9,12 +9,12 @@ variable "local_key_path" {
 }
 
 variable "member_count" {
-  type = number
+  type    = number
   default = "2"
 }
 
-variable "prefix"{
-  type = string
+variable "prefix" {
+  type    = string
   default = "hazelcast"
 }
 
@@ -55,6 +55,11 @@ variable "hazelcast_aws_version" {
 }
 
 variable "hazelcast_mancenter_version" {
-  type   = string
+  type    = string
   default = "4.2020.08"
+}
+
+variable "aws_ssh_user" {
+  type    = string
+  default = "ubuntu"
 }
