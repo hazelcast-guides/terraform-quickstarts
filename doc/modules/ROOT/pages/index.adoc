@@ -4,16 +4,15 @@ This is the base template for Hazelcast integration module guides.
 You can clone this repository, work on it and create your guide, and then push to a new repository.
 ////
 
-:github-address: [github-repo-address-of-your-guide]
+:github-address: https://github.com/mtyazici/hazelcast-terraform
 
-:templates-url: https://raw.githubusercontent.com/hazelcast-guides/adoc-templates/master
 
 // Use this relative url if you are going to publish the guide on the guides site.
 // Note that this url will not work locally and raise asciidoctor errors.
 // So, complete the guide with the above url and set the below one just before 
 // publishing on the guides site.
 //
-// :templates-url: templates:ROOT:page$/
+:templates-url: templates:ROOT:page$/
 
 = Deploying Hazelcast Cluster on Cloud using Terraform
 
