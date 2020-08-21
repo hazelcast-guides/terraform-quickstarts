@@ -13,6 +13,7 @@ You can clone this repository, work on it and create your guide, and then push t
 // publishing on the guides site.
 //
 :templates-url: templates:ROOT:page$/
+:tabs:
 
 = Deploying Hazelcast Cluster on Cloud using Terraform
 
@@ -33,9 +34,11 @@ You will learn how to deploy a Hazelcast cluster and Hazelcast Management Center
 == Giving Access to Terraform
 
 Cloud providers offer different ways of authenticating Terraform to create resources. Below some of them are presented.
-
-===  AWS
-
+[tabs]
+====
+AWS::
++
+--
 You can set environment variables `AWS_ACCESS_KEY_ID` and  `AWS_SECRET_ACCESS_KEY`. Terraform will use these environment variables to create resources. Run the following commands.
 
 [source, shell]
@@ -45,8 +48,10 @@ $ export AWS_SECRET_ACCESS_KEY="XXXXXXXXXXXXXXXX"
 ----
 
 You can find other ways of providing credentials at https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication[Terraform AWS authentication]
-
-=== Azure
+--
+Azure::
++
+--
 
 If you are using a user account, you can login with https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest#install[Azure CLI]. Run the following command to authenticate. Terraform will be able to detect your account.
 
@@ -68,10 +73,12 @@ provider "azurerm" {
 }
 
 ----
-
+--
 If you want to authenticate through managed identities and service principals, please refer to https://www.terraform.io/docs/providers/azurerm/index.html#authenticating-to-azure[Authenticating to Azure]
 
-=== GCP
+GCP::
++
+--
 
 You can use service accounts to authenticate Terraform. Get a service account key file, you can create key files on https://console.cloud.google.com/apis/credentials/serviceaccountkey[Google Console]. After you have created a key file, put its path  in `gcp/main.tf` as follows.
 
@@ -89,7 +96,8 @@ provider "google" {
   zone    = var.zone
 }
 ----
-
+--
+====
 == Configuring Terraform for Connection
 
 Now Terraform has access to your credentials, we need to supply some variables to configure Terraform to be able to create resources correctly.
@@ -102,8 +110,11 @@ $ ssh-keygen -f ~/.ssh/YOUR-KEY-NAME -t rsa
 ----
 
 This command will create two key files `YOUR-KEY-NAME.pub` and `YOUR-KEY-NAME`, public and private keys respectively. Terraform will use them to access VMs. 
-
-=== AWS 
+[tabs]
+====
+AWS::
++
+-- 
 
 Open `aws/terraform.tfvars` you will provide values for two variables.
 
@@ -114,16 +125,20 @@ Open `aws/terraform.tfvars` you will provide values for two variables.
 ====
 In this guide we are using an ubuntu image, AWS by default creates a user with name `ubuntu`. So if you want to connect to your VMs by `ssh` you will have to use `ubuntu`. If you want to use another linux distribution, please refer to https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html[AWS EC2 Managing users] and change the variable `aws_ssh_user` accordingly.
 ====
-
-=== Azure
+--
+Azure::
++
+--
 
 Open `azure/terraform.tfvars` you will provide values for two variables.
 
 
 - `azure_key_name:` This is the name of the public-private key pair we created earlier.
 - `local_key_path:` This is the path we created the key pair at. 
-
-=== GCP
+--
+GCP::
++
+--
 
 Open `gcp/terraform.tfvars` you will provide values for four variables.
 
@@ -132,7 +147,8 @@ Open `gcp/terraform.tfvars` you will provide values for four variables.
 - `project_id:` This is the id of the project you will use.
 - `service_account_email:` This is the mail of the service account Google Compute Instances will use. The service account must have IAM permissions for at least `compute.instances.list` and `compute.zones.list`.
 
-
+--
+====
 == Deploying the Cluster
 
 After you have authenticated your preferred cloud provider and provided necessary variables, `cd` into the directory of that provider.
