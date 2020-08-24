@@ -31,8 +31,8 @@ jobs:
 
       - name: Configure terraform.tfvars
         run: |
-          sed -i -e "s/#\"id_rsa\"/\"id_rsa\"/g" aws/terraform.tfvars
-          sed -i -e "s/#"~/.ssh"/\"~/.ssh\"/g" aws/terraform.tfvars
+          sed -i -e "s~#\"id_rsa\"~\"id_rsa\"~g" aws/terraform.tfvars
+          sed -i -e "s~#\"\~/\.ssh\"~\"\~/\.ssh\"~g" aws/terraform.tfvars
 
       - name: Terraform Init
         run: cd aws && terraform init
