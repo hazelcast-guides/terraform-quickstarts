@@ -121,8 +121,7 @@ Open `aws/terraform.tfvars` you will provide values for two variables.
 - `aws_key_name:` This is the name of the public-private key pair we created earlier.
 - `local_key_path:` This is the path we created the key pair at. 
 
-[NOTE]:
-In this guide we are using an ubuntu image, AWS by default creates a user with name `ubuntu`. So if you want to connect to your VMs by `ssh` you will have to use `ubuntu`. If you want to use another linux distribution, please refer to https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html[AWS EC2 Managing users] and change the variable `aws_ssh_user` accordingly.
+NOTE: In this guide we are using an ubuntu image, AWS by default creates a user with name `ubuntu`. So if you want to connect to your VMs by `ssh` you will have to use `ubuntu`. If you want to use another linux distribution, please refer to https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html[AWS EC2 Managing users] and change the variable `aws_ssh_user` accordingly.
 
 --
 Azure::
