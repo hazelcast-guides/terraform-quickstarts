@@ -8,9 +8,9 @@ local_key_path = #"~/.ssh"
 ########### Optional ############
 member_count = "2"
 
-# If you are using free tier, using aws_instance_type other than "t2.micro" and "t3.micro" will cost money.
+# If you are using free tier, using aws_instance_type other than "t2.micro" or "t3.micro" will cost money.
 aws_instance_type      = "t2.micro"
-aws_region             = "us-east-1"
+aws_region             = "eu-central-1"
 aws_tag_key            = "Category"
 aws_tag_value          = "hazelcast-aws-discovery"
 aws_connection_retries = "3"
