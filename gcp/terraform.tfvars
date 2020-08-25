@@ -5,7 +5,7 @@ gcp_key_name = #"id_rsa"
 local_key_path = #"~/.ssh"
 
 # ID of the project you want to use
-project_id = #project_id
+project_id = #"project_id"
 
 ########### Optional ############
 

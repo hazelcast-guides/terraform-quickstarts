@@ -32,7 +32,7 @@ jobs:
           sed -i -e "s~#\"id_rsa\"~\"id_rsa\"~g" gcp/terraform.tfvars
           sed -i -e "s~#\"\~/\.ssh\"~\"\~/\.ssh\"~g" gcp/terraform.tfvars
           project_id=$(echo $GCP_KEY_FILE | grep -Po '"project_id":\s"\K[-a-zA-Z0-9]+')
-          sed -i -e "s~\"hazelcast\"~\"${project_id}\"~g"  gcp/terraform.tfvars
+          sed -i -e "s~#\"project_id\"~\"${project_id}\"~g"  gcp/terraform.tfvars
 
       - name: Create GCP credentials file
         run: |
