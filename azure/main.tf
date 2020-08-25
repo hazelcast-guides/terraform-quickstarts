@@ -166,7 +166,7 @@ resource "azurerm_linux_virtual_machine" "hazelcast_member" {
     inline = [
       "cd /home/${var.azure_ssh_user}",
       "chmod 0755 start_azure_hazelcast_member.sh",
-      "./start_azure_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_azure_version} ",
+      "./start_azure_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_azure_version} ${var.azure_tag_key} ${var.azure_tag_value}",
       "sleep 30",
       "tail -n 10 ./logs/hazelcast.stdout.log"
     ]
@@ -245,7 +245,7 @@ resource "azurerm_linux_virtual_machine" "hazelcast_mancenter" {
     inline = [
       "cd /home/${var.azure_ssh_user}",
       "chmod 0755 start_azure_hazelcast_management_center.sh",
-      "./start_azure_hazelcast_management_center.sh ${var.hazelcast_mancenter_version} ",
+      "./start_azure_hazelcast_management_center.sh ${var.hazelcast_mancenter_version} ${var.azure_tag_key} ${var.azure_tag_value}",
       "sleep 30",
       "tail -n 10 ./logs/mancenter.stdout.log"
     ]

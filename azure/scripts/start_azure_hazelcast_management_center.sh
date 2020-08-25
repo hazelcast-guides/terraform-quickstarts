@@ -3,6 +3,8 @@
 set -x
 
 MANCENTER_VERSION=$1
+TAG_KEY=$2
+TAG_VALUE=$3
 
 mkdir -p ${HOME}/lib
 mkdir -p ${HOME}/logs
@@ -26,6 +28,8 @@ pushd ${HOME}/lib
 
 popd
 
+sed -i -e "s/AWS-TAG-KEY/${TAG_KEY}/g" ${HOME}/hazelcast-client.yaml
+sed -i -e "s/AWS-TAG-VALUE/${TAG_VALUE}/g" ${HOME}/hazelcast-client.yaml
 
 java -cp ${HOME}/lib/hazelcast-management-center-${MANCENTER_VERSION}.jar com.hazelcast.webmonitor.cli.MCConfCommandLine  cluster add -H ${MAN_CENTER_HOME} --client-config ${HOME}/hazelcast-client.yaml \
                        >> $LOG_DIR/mancenter.conf.stdout.log 2>> $LOG_DIR/mancenter.conf.stderr.log

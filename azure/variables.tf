@@ -55,3 +55,13 @@ variable "azure_instance_type" {
   type    = string
   default = "Standard_B1ms"
 }
+
+variable "azure_tag_key" {
+  type = string
+  default = "hz-guide"
+}
+
+variable "azure_tag_value" {
+  type = string
+  default = "terraform"
+}

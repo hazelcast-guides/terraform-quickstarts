@@ -21,6 +21,8 @@ hazelcast_azure_version     = "2.0"
 hazelcast_mancenter_version = "4.2020.08"
 
 # Username to use when connecting to VMs.
+azure_tag_key = "hz-guide"
+azure_tah_value = "terraform"
 azure_ssh_user = "ubuntu"
 
  

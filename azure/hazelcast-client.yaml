@@ -2,3 +2,4 @@ hazelcast-client:
   network:
     azure:
       enabled: true
+      tags: TAG_KEY=TAG_VALUE
