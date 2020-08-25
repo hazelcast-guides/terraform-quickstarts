@@ -130,7 +130,7 @@ resource "aws_instance" "hazelcast_member" {
   security_groups      = [aws_security_group.sg.name]
   key_name             = aws_key_pair.keypair.key_name
   tags = {
-    Name                 = "Hazelcast-AWS-Member-${count.index}"
+    Name                 = "${var.prefix}-aws-member-${count.index}"
     "${var.aws_tag_key}" = var.aws_tag_value
   }
 
@@ -138,7 +138,7 @@ resource "aws_instance" "hazelcast_member" {
     type        = "ssh"
     user        = var.aws_ssh_user
     host        = self.public_ip
-    timeout     = "100s"
+    timeout     = "120s"
     agent       = false
     private_key = file("${var.local_key_path}/${var.aws_key_name}")
   }
@@ -182,7 +182,7 @@ resource "aws_instance" "hazelcast_mancenter" {
   security_groups      = [aws_security_group.sg.name]
   key_name             = aws_key_pair.keypair.key_name
   tags = {
-    Name                 = "Hazelcast-AWS-Management-Center"
+    Name                 = "${var.prefix}-aws-management-center"
     "${var.aws_tag_key}" = var.aws_tag_value
   }
 
@@ -190,7 +190,7 @@ resource "aws_instance" "hazelcast_mancenter" {
     type        = "ssh"
     user        = var.aws_ssh_user
     host        = self.public_ip
-    timeout     = "100s"
+    timeout     = "120s"
     agent       = false
     private_key = file("${var.local_key_path}/${var.aws_key_name}")
   }

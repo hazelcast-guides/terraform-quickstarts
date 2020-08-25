@@ -73,7 +73,7 @@ resource "google_compute_firewall" "firewall" {
 
 resource "google_compute_address" "public_ip" {
   count = var.member_count + 1
-  name  = "${var.prefix}-publicip-${count.index}"
+  name  = "${var.prefix}-ip-${count.index}"
 }
 
 ############## HAZELCAST MEMBERS #####################
@@ -111,7 +111,7 @@ resource "google_compute_instance" "hazelcast_member" {
     user        = var.gcp_ssh_user
     type        = "ssh"
     private_key = file("${var.local_key_path}/${var.gcp_key_name}")
-    timeout     = "60s"
+    timeout     = "120s"
     agent       = false
   }
   provisioner "file" {
@@ -179,7 +179,7 @@ resource "google_compute_instance" "hazelcast_mancenter" {
     user        = var.gcp_ssh_user
     type        = "ssh"
     private_key = file("${var.local_key_path}/${var.gcp_key_name}")
-    timeout     = "60s"
+    timeout     = "120s"
     agent       = false
   }
   provisioner "file" {
