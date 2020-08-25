@@ -20,6 +20,9 @@ hazelcast_version           = "4.0.2"
 hazelcast_gcp_version       = "2.0.1"
 hazelcast_mancenter_version = "4.2020.08"
 
+gcp_label_key = "hz-guide"
+gcp_label_value = "terraform"
+
 # Username to use when connecting to VMs
 gcp_ssh_user = "ubuntu"
 

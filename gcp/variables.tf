@@ -58,3 +58,12 @@ variable "gcp_instance_type" {
   default = "f1-micro"
 }
 
+variable "gcp_label_key" {
+  type = string
+  default = "hz-guide"
+}
+
+variable "gcp_label_value" {
+  type = string
+  default = "terraform"
+}

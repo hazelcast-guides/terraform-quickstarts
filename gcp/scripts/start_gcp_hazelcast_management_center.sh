@@ -3,6 +3,8 @@
 set -x
 
 MANCENTER_VERSION=$1
+LABEL_KEY=$2
+LABEL_VALUE=$3
 
 mkdir -p ${HOME}/lib
 mkdir -p ${HOME}/logs
@@ -25,6 +27,8 @@ pushd ${HOME}/lib
 
 popd
 
+sed -i -e "s/LABEL_KEY/${LABEL_KEY}/g" ${HOME}/hazelcast-client.yaml
+sed -i -e "s/LABEL_VALUE/${LABEL_VALUE}/g" ${HOME}/hazelcast-client.yaml
  
 java -cp ${HOME}/lib/hazelcast-management-center-${MANCENTER_VERSION}.jar com.hazelcast.webmonitor.cli.MCConfCommandLine  cluster add -H ${MAN_CENTER_HOME} --client-config ${HOME}/hazelcast-client.yaml \
                        >> $LOG_DIR/mancenter.conf.stdout.log 2>> $LOG_DIR/mancenter.conf.stderr.log

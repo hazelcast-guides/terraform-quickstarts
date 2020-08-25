@@ -5,3 +5,4 @@ hazelcast:
         enabled: false
       gcp:
         enabled: true
+        label: LABEL_KEY=LABEL_VALUE

@@ -90,6 +90,10 @@ resource "google_compute_instance" "hazelcast_member" {
     }
   }
 
+  labels = {
+    "${var.gcp_label_key}" = var.gcp_label_value
+  }
+
   network_interface {
     subnetwork = google_compute_subnetwork.vpc_subnet.self_link
     access_config {
@@ -137,7 +141,7 @@ resource "google_compute_instance" "hazelcast_member" {
     inline = [
       "cd /home/${var.gcp_ssh_user}",
       "chmod 0755 start_gcp_hazelcast_member.sh",
-      "./start_gcp_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_gcp_version}",
+      "./start_gcp_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_gcp_version} ${var.gcp_label_key} ${var.gcp_label_value}",
       "sleep 10",
       "tail -n 10 ./logs/hazelcast.stdout.log"
     ]
@@ -156,6 +160,10 @@ resource "google_compute_instance" "hazelcast_mancenter" {
     initialize_params {
       image = "debian-cloud/debian-9"
     }
+  }
+  
+  labels = {
+    "${var.gcp_label_key}" = var.gcp_label_value
   }
 
   network_interface {
@@ -205,7 +213,7 @@ resource "google_compute_instance" "hazelcast_mancenter" {
     inline = [
       "cd /home/${var.gcp_ssh_user}",
       "chmod 0755 start_gcp_hazelcast_management_center.sh",
-      "./start_gcp_hazelcast_management_center.sh ${var.hazelcast_mancenter_version} ",
+      "./start_gcp_hazelcast_management_center.sh ${var.hazelcast_mancenter_version} ${var.gcp_label_key} ${var.gcp_label_value}",
       "sleep 20",
       "tail -n 10 ./logs/mancenter.stdout.log"
     ]
