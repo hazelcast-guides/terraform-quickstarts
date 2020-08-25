@@ -20,8 +20,28 @@ provider "google" {
   zone    = var.zone
 }
 
+#################### SERVICE ACCOUNT ####################
 
-#COMMON NETWORK - SUBNETWORK - FIREWALL
+resource "google_service_account" "service_account" {
+  account_id   = "${var.prefix}-sa"
+  display_name = "Service Account for Hazelcast Terraform Guide"
+}
+
+resource "google_project_iam_custom_role" "discovery_role" {
+  role_id     = "HazelcastGuideDiscoveryRole"
+  title       = "Discovery Role for Hazelcast Guides"
+  permissions = ["compute.instances.list", "compute.zones.list", "compute.regions.get"]
+}
+
+resource "google_project_iam_member" "project" {
+  depends_on = [google_service_account.service_account]
+  project = var.project_id
+  role    = google_project_iam_custom_role.discovery_role.name
+  member  = "serviceAccount:${google_service_account.service_account.email}"
+}
+
+
+########## NETWORK - SUBNETWORK - FIREWALL - PUBLIC IP ##################
 
 resource "google_compute_network" "vpc" {
   name                    = "${var.prefix}-vpc"
@@ -56,6 +76,8 @@ resource "google_compute_address" "public_ip" {
   name  = "${var.prefix}-publicip-${count.index}"
 }
 
+############## HAZELCAST MEMBERS #####################
+
 resource "google_compute_instance" "hazelcast_member" {
   count                     = var.member_count
   name                      = "${var.prefix}-instance-${count.index}"
@@ -76,7 +98,7 @@ resource "google_compute_instance" "hazelcast_member" {
   }
 
   service_account {
-    email  = var.service_account_email
+    email  = google_service_account.service_account.email
     scopes = ["cloud-platform"]
   }
 
@@ -123,9 +145,10 @@ resource "google_compute_instance" "hazelcast_member" {
 
 }
 
+############## HAZELCAST MANAGEMENT CENTER #######################
 
 resource "google_compute_instance" "hazelcast_mancenter" {
-  name                      = "hazelcast-mancenter"
+  name                      = "${var.prefix}-mancenter"
   machine_type              = var.gcp_instance_type
   allow_stopping_for_update = "true"
   zone                      = var.zone
@@ -143,7 +166,7 @@ resource "google_compute_instance" "hazelcast_mancenter" {
   }
 
   service_account {
-    email  = var.service_account_email
+    email  = google_service_account.service_account.email
     scopes = ["cloud-platform"]
   }
 

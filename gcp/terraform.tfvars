@@ -4,12 +4,8 @@ gcp_key_name = #"id_rsa"
 # local path of private key file for SSH connection - local_key_path/aws_key_name
 local_key_path = #"~/.ssh"
 
-# Service account to give API access to Hazelcast members
-service_account_email = 
-
-# Project ID you want to use
-project_id = 
-
+# ID of the project you want to use
+project_id = #project_id
 
 ########### Optional ############
 

@@ -117,6 +117,16 @@ provider "google" {
   region  = var.region
   zone    = var.zone
 }
+
+----
+The service account you use should have the following roles assigned to it:
+
+----
+Compute Admin
+Role Administrator
+Security Admin
+Service Account Admin
+Service Account User 
 ----
 --
 ====
@@ -161,12 +171,11 @@ GCP::
 +
 --
 
-Open `gcp/terraform.tfvars` you will provide values for four variables.
+Open `gcp/terraform.tfvars` you will provide values for three variables.
 
 - `gcp_key_name:` This is the name of the public-private key pair we created earlier.
 - `local_key_path:` This is the path we created the key pair at. 
 - `project_id:` This is the id of the project you will use.
-- `service_account_email:` This is the mail of the service account Google Compute Instances will use. The service account must have IAM permissions for at least `compute.instances.list` and `compute.zones.list`.
 
 --
 ====

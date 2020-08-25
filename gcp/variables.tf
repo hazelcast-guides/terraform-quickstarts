@@ -8,14 +8,9 @@ variable "local_key_path" {
   type = string
 }
 
-# Service account to give API access to Hazelcast members
-variable "service_account_email" {
-  type = string
-}
-
+# ID of the project you want to use
 variable "project_id" {
   type    = string
-  default = null
 }
 
 variable "region" {
@@ -62,5 +57,4 @@ variable "gcp_instance_type" {
   type    = string
   default = "f1-micro"
 }
-
 
