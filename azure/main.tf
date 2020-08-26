@@ -76,7 +76,6 @@ resource "azurerm_role_definition" "reader" {
 resource "azurerm_role_assignment" "reader" {
   scope        = data.azurerm_subscription.primary.id
   principal_id = azurerm_user_assigned_identity.hazelcast_reader.principal_id
-  #role_definition_name = "Reader"
   role_definition_id = azurerm_role_definition.reader.id
 }
 

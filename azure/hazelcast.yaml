@@ -5,4 +5,4 @@ hazelcast:
         enabled: false
       azure:
         enabled: true
-        tags: TAG_KEY=TAG_VALUE
+        tag: TAG_KEY=TAG_VALUE
