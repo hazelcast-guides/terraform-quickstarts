@@ -94,9 +94,14 @@ provider "azurerm" {
 
 }
 
+If you want to authenticate through service principals, please refer to https://www.terraform.io/docs/providers/azurerm/index.html#authenticating-to-azure[Authenticating to Azure].
 ----
+
+
+The account or service principal 
+
 --
-If you want to authenticate through managed identities and service principals, please refer to https://www.terraform.io/docs/providers/azurerm/index.html#authenticating-to-azure[Authenticating to Azure].
+
 
 GCP::
 +

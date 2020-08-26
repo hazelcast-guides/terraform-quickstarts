@@ -18,16 +18,8 @@ variable "prefix" {
   default = "hazelcast"
 }
 
-variable "tags" {
-  type = map
-  default = {
-    tag-name = "hazelcast"
-  }
-}
-
 variable "member_count" {
-  type = string
-
+  type = number
   default = "2"
 }
 

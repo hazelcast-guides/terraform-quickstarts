@@ -1,7 +1,7 @@
 # key name to be assigned to Google Compute instances
 gcp_key_name = #"id_rsa"
 
-# local path of private key file for SSH connection - local_key_path/aws_key_name
+# local path of private key file for SSH connection - local_key_path/gcp_key_name
 local_key_path = #"~/.ssh"
 
 # ID of the project you want to use

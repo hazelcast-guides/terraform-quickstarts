@@ -40,7 +40,7 @@ variable "aws_tag_value" {
 }
 
 variable "aws_connection_retries" {
-  type    = string
+  type    = number
   default = "3"
 }
 

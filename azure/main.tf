@@ -106,7 +106,9 @@ resource "azurerm_linux_virtual_machine" "hazelcast_member" {
   size                  = var.azure_instance_type
   admin_username        = var.azure_ssh_user
 
-  tags = var.tags
+  tags = {
+    "${var.azure_tag_key}" = var.azure_tag_value
+  }
 
   os_disk {
     name                 = "OsDisk_${count.index}"
@@ -172,8 +174,6 @@ resource "azurerm_linux_virtual_machine" "hazelcast_member" {
     ]
   }
 
-
-
 }
 
 # Create Hazelcast Management Center
@@ -185,7 +185,10 @@ resource "azurerm_linux_virtual_machine" "hazelcast_mancenter" {
   size                  = "Standard_B1ms"
   admin_username        = var.azure_ssh_user
 
-  tags = var.tags
+  tags = {
+    "${var.azure_tag_key}" = var.azure_tag_value
+  }
+
 
   os_disk {
     name                 = "OsDisk"
