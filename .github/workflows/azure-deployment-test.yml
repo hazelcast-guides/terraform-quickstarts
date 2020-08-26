@@ -31,12 +31,12 @@ jobs:
 
       - name: Configure terraform.tfvars
         run: |
-          sed -i -e "s~#\"id_rsa\"~\"id_rsa\"~g" gcp/terraform.tfvars
-          sed -i -e "s~#\"\~/\.ssh\"~\"\~/\.ssh\"~g" gcp/terraform.tfvars
+          sed -i -e "s~#\"id_rsa\"~\"id_rsa\"~g" azure/terraform.tfvars
+          sed -i -e "s~#\"\~/\.ssh\"~\"\~/\.ssh\"~g" azure/terraform.tfvars
 
       - name: Use unique prefix for resources
         run: |
-          sed -i -e "s~\"hazelcast\"~\"${GITHUB_WORKFLOW}-${GITHUB_RUN_ID}\"~g" gcp/terraform.tfvars
+          sed -i -e "s~\"hazelcast\"~\"${GITHUB_WORKFLOW}-${GITHUB_RUN_ID}\"~g" azure/terraform.tfvars
 
       - name: Terraform Init
         run: cd azure && terraform init
