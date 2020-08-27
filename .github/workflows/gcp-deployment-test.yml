@@ -23,7 +23,6 @@ jobs:
       - name: Checkout to repo 
         uses: actions/checkout@v2
 
-      #BUILD TERRAFORM
       - name : Set-up Terraform
         uses: hashicorp/setup-terraform@v1
 
@@ -53,18 +52,15 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          name: id_rsa # optional
+          name: id_rsa 
           known_hosts: " "
 
       - name: Install public key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PUBLIC_KEY }}
-          name: id_rsa.pub # optional
+          name: id_rsa.pub 
           known_hosts: " "
-
-      #   - id: plan
-      #     run: cd gcp && terraform plan
 
       - name: Terraform Apply
         run: |

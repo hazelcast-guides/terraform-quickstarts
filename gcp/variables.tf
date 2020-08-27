@@ -1,9 +1,9 @@
-# key pair name to be assigned to EC2 instance, it will be created by terraform.
+# key name to be assigned to Google Compute instances
 variable "gcp_key_name" {
   type = string
 }
 
-# local path of private key file for SSH connection - local_key_path/aws_key_name
+# local path of private key file for SSH connection - local_key_path/gcp_key_name
 variable "local_key_path" {
   type = string
 }

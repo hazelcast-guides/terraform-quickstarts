@@ -98,7 +98,7 @@ If you want to authenticate through service principals, please refer to https://
 ----
 
 
-The account or service principal 
+The account or service principal you use should have the role `Owner` assigned to it.
 
 --
 
@@ -245,5 +245,5 @@ In this guide we used Terraform to create Hazelcast cluster on cloud. We defined
 // Add some links to resources, such as other related guides.
 // Use relative links used on the home page (see https://raw.githubusercontent.com/hazelcast-guides/guides-site/master/home/modules/ROOT/pages/index.adoc)
 
-- xref:hazelcast-embedded-springboot:ROOT:index.adoc[Hazelcast in SpringBoot]
-- xref:hazelcast-quarkus:ROOT:index.adoc[Hazelcast Client for Quarkus] 
+- xref:kubernetes-embedded:ROOT:index.adoc[Embedded Hazelcast on Kubernetes]
+- xref:istio:ROOT:index.adoc[Hazelcast with Istio Service Mesh]
