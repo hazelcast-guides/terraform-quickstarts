@@ -17,7 +17,7 @@ aws_connection_retries = "3"
 
 prefix                      = "hazelcast"
 hazelcast_version           = "4.0"
-hazelcast_aws_version       = "3.1"
+hazelcast_aws_version       = "3.3"
 hazelcast_mancenter_version = "4.2020.08"
 
 # Username to use when connecting to VMs. Do not change this if you are using ubuntu images.

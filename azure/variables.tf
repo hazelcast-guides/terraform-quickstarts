@@ -30,7 +30,7 @@ variable "hazelcast_version" {
 
 variable "hazelcast_azure_version" {
   type    = string
-  default = "2.0"
+  default = "2.1"
 }
 
 variable "hazelcast_mancenter_version" {

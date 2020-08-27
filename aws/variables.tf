@@ -51,7 +51,7 @@ variable "hazelcast_version" {
 
 variable "hazelcast_aws_version" {
   type    = string
-  default = "3.1"
+  default = "3.3"
 }
 
 variable "hazelcast_mancenter_version" {

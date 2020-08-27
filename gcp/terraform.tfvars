@@ -17,7 +17,7 @@ gcp_instance_type = "f1-micro"
 
 prefix                      = "hazelcast"
 hazelcast_version           = "4.0.2"
-hazelcast_gcp_version       = "2.0.1"
+hazelcast_gcp_version       = "2.1"
 hazelcast_mancenter_version = "4.2020.08"
 
 gcp_label_key = "hz-guide"

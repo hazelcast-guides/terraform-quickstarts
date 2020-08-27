@@ -15,7 +15,7 @@ member_count = "2"
 
 prefix                      = "hazelcast"
 hazelcast_version           = "4.0.2"
-hazelcast_azure_version     = "2.0"
+hazelcast_azure_version     = "2.1"
 hazelcast_mancenter_version = "4.2020.08"
 
 # Username to use when connecting to VMs.
