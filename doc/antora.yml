@@ -1,4 +1,4 @@
-name: hazelcast-terraform    # a brief module name. This will be included in the guide url.
+name: hazelcast-terraform-cloud    # a brief module name. This will be included in the guide url.
 title: Deploying Hazelcast Clusters on Cloud using Terraform  # a brief module title. This will not show up on the website.
 version: master
 
