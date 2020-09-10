@@ -202,7 +202,6 @@ resource "google_compute_instance" "hazelcast_mancenter" {
 
   provisioner "remote-exec" {
     inline = [
-      # "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
       "sudo apt-get update",
       "sudo apt-get -y install openjdk-8-jdk wget unzip",
       "sleep 5"

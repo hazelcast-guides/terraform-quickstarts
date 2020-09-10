@@ -1,17 +1,6 @@
-////
-This is the base template for Hazelcast integration module guides.
-
-You can clone this repository, work on it and create your guide, and then push to a new repository.
-////
-
-:github-address: https://github.com/mtyazici/hazelcast-terraform
 
 
-// Use this relative url if you are going to publish the guide on the guides site.
-// Note that this url will not work locally and raise asciidoctor errors.
-// So, complete the guide with the above url and set the below one just before 
-// publishing on the guides site.
-//
+:github-address: https://github.com/hazelcast-guides/terraform-quickstarts
 :templates-url: templates:ROOT:page$/
 :tabs:
 
@@ -241,9 +230,6 @@ $ terraform destroy
 In this guide we used Terraform to create Hazelcast cluster on cloud. We defined the state we wanted in `main.tf` and Terraform applied our desired state on our cloud provider. Then we used Hazelcast Management Center to monitor the state of our cluster. We changed the desired state by updating `terraform.tfvars` file and Terraform applied our changes when we run `terraform apply`. 
 
 == See Also
-
-// Add some links to resources, such as other related guides.
-// Use relative links used on the home page (see https://raw.githubusercontent.com/hazelcast-guides/guides-site/master/home/modules/ROOT/pages/index.adoc)
 
 - xref:kubernetes-embedded:ROOT:index.adoc[Embedded Hazelcast on Kubernetes]
 - xref:istio:ROOT:index.adoc[Hazelcast with Istio Service Mesh]
