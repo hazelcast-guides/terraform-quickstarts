@@ -27,8 +27,13 @@ resource "google_service_account" "service_account" {
   display_name = "Service Account for Hazelcast Terraform Guide"
 }
 
+
+resource "random_id" "id" {
+  byte_length = 8
+}
+
 resource "google_project_iam_custom_role" "discovery_role" {
-  role_id     = "HazelcastGuideDiscoveryRole"
+  role_id     = "HazelcastGuideDiscoveryRole${random_id.id.hex}"
   title       = "Discovery Role for Hazelcast Guides"
   permissions = ["compute.instances.list", "compute.zones.list", "compute.regions.get"]
 }
