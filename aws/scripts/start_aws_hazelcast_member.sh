@@ -40,7 +40,7 @@ sed -i -e "s/CONN_RETRIES/${CONN_RETRIES}/g" ${HOME}/hazelcast.yaml
 sed -i -e "s/IAM_ROLE/${IAM_ROLE}/g" ${HOME}/hazelcast.yaml
 
 CLASSPATH="${HOME}/jars/hazelcast-${HZ_VERSION}.jar:${HOME}/jars/hazelcast-aws-${AWS_VERSION}.jar"
-nohup java -cp ${CLASSPATH} -server com.hazelcast.core.server.HazelcastMemberStarter >> ${HOME}/logs/hazelcast.stderr.log 2>> ${HOME}/logs/hazelcast.stdout.log &
+nohup java -cp ${CLASSPATH} -server com.hazelcast.core.server.HazelcastMemberStarter &>> ${HOME}/logs/hazelcast.logs &
 sleep 5
 
 

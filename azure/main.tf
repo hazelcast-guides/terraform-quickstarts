@@ -45,7 +45,6 @@ resource "azurerm_public_ip" "publicip" {
 }
 
 
-data "azurerm_subscription" "primary" {}
 
 # Create user assigned managed identity
 resource "azurerm_user_assigned_identity" "hazelcast_reader" {
@@ -70,6 +69,8 @@ resource "azurerm_role_definition" "reader" {
     data.azurerm_subscription.primary.id
   ]
 }
+
+data "azurerm_subscription" "primary" {}
 
 
 #Assign role to the user assigned managed identity
@@ -170,7 +171,7 @@ resource "azurerm_linux_virtual_machine" "hazelcast_member" {
       "chmod 0755 start_azure_hazelcast_member.sh",
       "./start_azure_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_azure_version} ${var.azure_tag_key} ${var.azure_tag_value}",
       "sleep 30",
-      "tail -n 10 ./logs/hazelcast.stdout.log"
+      "tail -n 10 ./logs/hazelcast.logs"
     ]
   }
 

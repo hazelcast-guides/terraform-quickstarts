@@ -130,7 +130,6 @@ resource "google_compute_instance" "hazelcast_member" {
 
   provisioner "remote-exec" {
     inline = [
-      # "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
       "sudo apt-get update",
       "sudo apt-get -y install openjdk-8-jdk wget",
       "sleep 5"
@@ -143,7 +142,7 @@ resource "google_compute_instance" "hazelcast_member" {
       "chmod 0755 start_gcp_hazelcast_member.sh",
       "./start_gcp_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_gcp_version} ${var.gcp_label_key} ${var.gcp_label_value}",
       "sleep 10",
-      "tail -n 10 ./logs/hazelcast.stdout.log"
+      "tail -n 10 ./logs/hazelcast.logs"
     ]
   }
 

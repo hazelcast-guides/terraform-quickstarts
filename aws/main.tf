@@ -168,7 +168,7 @@ resource "aws_instance" "hazelcast_member" {
       "chmod 0755 start_aws_hazelcast_member.sh",
       "./start_aws_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_aws_version} ${var.aws_region} ${var.aws_tag_key} ${var.aws_tag_value} ${var.aws_connection_retries} ${aws_iam_role.discovery_role.name}",
       "sleep 10",
-      "tail -n 10 ./logs/hazelcast.stdout.log"
+      "tail -n 10 ./logs/hazelcast.logs"
     ]
   }
 }
