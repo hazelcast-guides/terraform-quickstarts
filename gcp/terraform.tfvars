@@ -25,8 +25,3 @@ gcp_label_value = "terraform"
 
 # Username to use when connecting to VMs
 gcp_ssh_user = "ubuntu"
-
-
-
-
-
