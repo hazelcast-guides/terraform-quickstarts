@@ -1,46 +1,238 @@
-////
-This is the base template for Hazelcast integration module guides.
 
-You can clone this repository, work on it and create your guide, and then push to a new repository.
-////
 
-:github-address: [github-repo-address-of-your-guide]
+:github-address: https://github.com/hazelcast-guides/terraform-quickstarts
+:templates-url: templates:ROOT:page$/
+:tabs:
 
-:templates-url: https://raw.githubusercontent.com/hazelcast-guides/adoc-templates/master
+= Deploying Hazelcast Cluster on Cloud using Terraform
 
-// Use this relative url if you are going to publish the guide on the guides site.
-// Note that this url will not work locally and raise asciidoctor errors.
-// So, complete the guide with the above url and set the below one just before 
-// publishing on the guides site.
-//
-// :templates-url: templates:ROOT:page$/
-
-= Title
-
-// Content entered directly below the header but before the first section heading is called the preamble.
+This guide will get you started with using Terraform to deploy Hazelcast clusters on cloud.
 
 include::{templates-url}/link-to-repo.adoc[]
 
 == What You’ll Learn
 
-// Define the problem and tell reader what he/she will learn from this guide.
+You will learn how to deploy a Hazelcast cluster and Hazelcast Management Center on AWS, Azure, and GCP using Terraform. Terraform files have the necessary resources defined and all you need to do is setting your credentials to give Terraform permissions for creating resources on your behalf. After you run Terraform and create a cluster on cloud, you will be able to monitor the cluster using Hazelcast Management Center. You can modify the Terraform files to create new resources or destroy the whole cluster.
 
 == Prerequisites
 
-// Define the prerequisites for the guide.
+- https://www.terraform.io/downloads.html#undefined[Terraform v0.13+]
 
-////
-Write the steps in your guide here by making each step a different section
-////
+- Access to one of AWS, Azure or GCP. The account must have permissions to create resources.
+
+== Giving Access to Terraform
+
+Cloud providers offer different ways of authenticating Terraform to create resources. Below you can see some of them.
+[tabs]
+====
+AWS::
++
+--
+You can set environment variables `AWS_ACCESS_KEY_ID` and  `AWS_SECRET_ACCESS_KEY`. Terraform will use these environment variables to create resources. Run the following commands.
+
+[source, shell]
+----
+$ export AWS_ACCESS_KEY_ID="XXXXXXXXXXXX"
+$ export AWS_SECRET_ACCESS_KEY="XXXXXXXXXXXXXXXX"
+----
+
+You can find other ways of providing credentials at https://registry.terraform.io/providers/hashicorp/aws/latest/docs#authentication[Terraform AWS authentication].
+
+The account you use in Terraform should have the following permissions assigned to it:
+ 
+----
+"iam:CreateRole",
+"iam:DeleteRole",
+"iam:CreateInstanceProfile",
+"iam:DeleteInstanceProfile",
+"iam:DeleteRolePolicy",
+"iam:AddRoleToInstanceProfile",
+"iam:RemoveRoleFromInstanceProfile",
+"iam:PutRolePolicy",
+"iam:PassRole",
+"iam:GetRole",
+"iam:GetInstanceProfile",
+"iam:GetPolicy",
+"iam:GetRolePolicy"
+"ec2:*"
+----
+
+The `iam` permissions are necessary to create and delete a role using Terraform in `aws/main.tf`. Created role `aws_iam_role.discovery_role` will be used by Hazelcast instances to find each other.
+--
+
+Azure::
++
+--
+
+If you are using a user account, you can login with https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest#install[Azure CLI]. Run the following command to authenticate. Terraform will be able to detect your account.
+
+[source, shell]
+----
+$ az login
+----
+
+If you have multiple subscriptions or tenants you can choose one by adding following lines to `azure/main.tf`.
+[source, shell]
+----
+provider "azurerm" {
+  version = "=2.23.0"
+  features {}
+
+  subscription_id = "00000000-0000-0000-0000-000000000000"
+  tenant_id       = "11111111-1111-1111-1111-111111111111"
+
+}
+
+If you want to authenticate through service principals, please refer to https://www.terraform.io/docs/providers/azurerm/index.html#authenticating-to-azure[Authenticating to Azure].
+----
+
+
+The account or service principal you use should have the role `Owner` assigned to it.
+
+--
+
+
+GCP::
++
+--
+
+You can use service accounts to authenticate Terraform. Get a service account key file, you can create key files on https://console.cloud.google.com/apis/credentials/serviceaccountkey[Google Console]. After you have created a key file, put its path  in `gcp/main.tf` as follows.
+
+[source,terraform]
+----
+provider "google" {
+  version = "3.5.0"
+
+  credentials = file("KEY-FILE-PATH/YOUR-KEY-FILE.json")
+  batching {
+    enable_batching = "false"
+  }
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+}
+
+----
+The service account you use should have the following roles assigned to it:
+
+----
+Compute Admin
+Role Administrator
+Security Admin
+Service Account Admin
+Service Account User 
+----
+--
+====
+
+== Configuring Terraform for Connection
+
+Now that Terraform has access to your credentials, we need to supply some variables to configure Terraform so that resources can be created correctly.
+
+Terraform will need a public-private key pair to be able to provision files and execute commands on the remote machines. For this purpose, you can use one of your existing key pairs or create a new one with the following command:
+
+[source, shell]
+----
+$ ssh-keygen -f ~/.ssh/YOUR-KEY-NAME -t rsa
+----
+
+This command will create two key files: `YOUR-KEY-NAME.pub` and `YOUR-KEY-NAME`, public and private keys respectively. Terraform will use them to access VMs. 
+
+[tabs]
+====
+AWS::
++
+-- 
+
+Open `aws/terraform.tfvars` you will provide values for two variables.
+
+- `aws_key_name:` This is the name of the public-private key pair we created earlier.
+- `local_key_path:` This is the path we created the key pair at. 
+
+NOTE: In this guide we use an Ubuntu image and AWS creates a user with name `ubuntu` by default. So if you want to connect to your VMs via `ssh` you will have to use `ubuntu`. If you want to use another Linux distribution, please refer to https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html[AWS EC2 Managing users] and change the variable `aws_ssh_user` accordingly.
+
+NOTE: The configuration defined in `aws/main.tf` assumes you have a default VPC in the region defined in `var.region`. AWS creates a default VPC for each activated region.  If you didn't delete it you can skip this note. Otherwise, please refer to https://docs.aws.amazon.com/vpc/latest/userguide/default-vpc.html#create-default-vpc[AWS Creating Default VPC].
+--
+Azure::
++
+--
+
+Open `azure/terraform.tfvars` you will provide values for two variables.
+
+
+- `azure_key_name:` This is the name of the public-private key pair we created earlier.
+- `local_key_path:` This is the path we created the key pair at. 
+--
+GCP::
++
+--
+
+Open `gcp/terraform.tfvars` you will provide values for three variables.
+
+- `gcp_key_name:` This is the name of the public-private key pair we created earlier.
+- `local_key_path:` This is the path we created the key pair at. 
+- `project_id:` This is the id of the project you will use.
+
+--
+====
+
+== Deploying the Cluster
+
+After you have authenticated your preferred cloud provider and provided necessary variables, `cd` into the directory of that provider.
+
+[NOTE]
+====
+If you are using a paid subscription, you may be charged for the resources that will be created in this guide. However you can complete the guide using free tier subscriptions provided by https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc[AWS], https://azure.microsoft.com/en-us/free/[Azure] and https://cloud.google.com/free[GCP].
+====
+
+Initialize Terraform.
+[source, shell]
+----
+$ terraform init
+----
+
+Run the following to create an execution plan. This command will not create any resources but only show what actions Terraform will perform to reach the desired state defined in Terraform files.
+[source, shell]
+----
+$ terraform plan
+----
+
+Apply your Terraform configuration. It should take a couple of minutes.
+[source, shell]
+----
+$ terraform apply
+----
+After the resources are created, the output should be similar to following:
+
+
+[source, shell]
+----
+mancenter_public_ip = 3.92.204.153
+members_public_ip = [
+  "3.82.226.227",
+  "3.87.211.122",
+]
+----
+
+Now you deployed 2 Hazelcast cluster members and a Hazelcast Management Center. You can monitor the state of your cluster from the following address:
+[source]
+----
+mancenter_public_ip:8080
+----
+
+You can change the input variables in `variables.tf` file by updating `terraform.tfvars`. After your changes the new desired state will be applied by `terraform apply`. You can use `ssh` to examine VMs by using the IPs provided in the output of `terraform apply`. If you cannot find the outputs you can run 'terraform show' to see the current state of your configuration.
+
+When you are done with the guide, run the following to delete all the resources created.
+[source, shell]
+----
+$ terraform destroy
+----
 
 == Summary
 
-// Provide a quick summary
+In this guide we used Terraform to create Hazelcast cluster on cloud. We defined the state we wanted in `main.tf` and Terraform applied our desired state on our cloud provider. Then we used Hazelcast Management Center to monitor the state of our cluster. We changed the desired state by updating `terraform.tfvars` file and Terraform applied our changes when we run `terraform apply`. 
 
 == See Also
 
-// Add some links to resources, such as other related guides.
-// Use relative links used on the home page (see https://raw.githubusercontent.com/hazelcast-guides/guides-site/master/home/modules/ROOT/pages/index.adoc)
-
-- xref:hazelcast-embedded-springboot:ROOT:index.adoc[Hazelcast in SpringBoot]
-- xref:hazelcast-quarkus:ROOT:index.adoc[Hazelcast Client for Quarkus] 
+- xref:kubernetes-embedded:ROOT:index.adoc[Embedded Hazelcast on Kubernetes]
+- xref:istio:ROOT:index.adoc[Hazelcast with Istio Service Mesh]
