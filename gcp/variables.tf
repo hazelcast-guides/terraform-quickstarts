@@ -10,11 +10,11 @@ variable "local_key_path" {
 
 # ID of the project you want to use
 variable "project_id" {
-  type    = string
+  type = string
 }
 
 variable "region" {
-  type = string
+  type    = string
   default = "us-central1"
 }
 
@@ -33,16 +33,6 @@ variable "gcp_ssh_user" {
   default = "ubuntu"
 }
 
-variable "hazelcast_version" {
-  type    = string
-  default = "4.0.2"
-}
-
-variable "hazelcast_gcp_version" {
-  type    = string
-  default = "2.1"
-}
-
 variable "hazelcast_mancenter_version" {
   type    = string
   default = "4.2020.08"
@@ -59,11 +49,11 @@ variable "gcp_instance_type" {
 }
 
 variable "gcp_label_key" {
-  type = string
+  type    = string
   default = "hz-guide"
 }
 
 variable "gcp_label_value" {
-  type = string
+  type    = string
   default = "terraform"
 }

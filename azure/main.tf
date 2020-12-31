@@ -75,8 +75,8 @@ data "azurerm_subscription" "primary" {}
 
 #Assign role to the user assigned managed identity
 resource "azurerm_role_assignment" "reader" {
-  scope        = data.azurerm_subscription.primary.id
-  principal_id = azurerm_user_assigned_identity.hazelcast_reader.principal_id
+  scope              = data.azurerm_subscription.primary.id
+  principal_id       = azurerm_user_assigned_identity.hazelcast_reader.principal_id
   role_definition_id = azurerm_role_definition.reader.id
 }
 
@@ -159,9 +159,10 @@ resource "azurerm_linux_virtual_machine" "hazelcast_member" {
   provisioner "remote-exec" {
     inline = [
       "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
-      "sudo apt-get update",
-      "sudo apt-get -y install openjdk-8-jdk wget",
-      "sleep 30"
+      "wget -qO - https://bintray.com/user/downloadSubjectPublicKey?username=hazelcast | sudo apt-key add -",
+      "echo \"deb http://dl.bintray.com/hazelcast/deb stable main\" | sudo tee -a /etc/apt/sources.list",
+      "sudo apt update && sudo apt -y install hazelcast",
+      "sleep 10"
     ]
   }
 
@@ -169,9 +170,9 @@ resource "azurerm_linux_virtual_machine" "hazelcast_member" {
     inline = [
       "cd /home/${var.azure_ssh_user}",
       "chmod 0755 start_azure_hazelcast_member.sh",
-      "./start_azure_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_azure_version} ${var.azure_tag_key} ${var.azure_tag_value}",
-      "sleep 30",
-      "tail -n 10 ./logs/hazelcast.logs"
+      "./start_azure_hazelcast_member.sh ${var.azure_tag_key} ${var.azure_tag_value}",
+      "sleep 10",
+      "tail -n 10 /home/${var.azure_ssh_user}/hazelcast.stdout.log"
     ]
   }
 
@@ -236,7 +237,7 @@ resource "azurerm_linux_virtual_machine" "hazelcast_mancenter" {
       "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
       "sudo apt-get update",
       "sudo apt-get -y install openjdk-8-jdk wget unzip",
-      "sleep 30"
+      "sleep 10"
     ]
   }
 
