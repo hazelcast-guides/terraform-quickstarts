@@ -1,8 +1,8 @@
 # key pair name to be assigned to EC2 instance
-aws_key_name = "id_rsa"
+aws_key_name = #"id_rsa"
 
 # local path of public and private key file for SSH connection - local_key_path/aws_key_name
-local_key_path = "~/.ssh"
+local_key_path = #"~/.ssh"
 
 
 ########### Optional ############

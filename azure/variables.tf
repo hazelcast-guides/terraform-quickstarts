@@ -25,7 +25,7 @@ variable "member_count" {
 
 variable "hazelcast_mancenter_version" {
   type    = string
-  default = "4.2020.08"
+  default = "4.2020.12"
 }
 
 variable "azure_ssh_user" {

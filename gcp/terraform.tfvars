@@ -1,11 +1,11 @@
 # key name to be assigned to Google Compute instances
-gcp_key_name = "id_rsa"
+gcp_key_name = #"id_rsa"
 
 # local path of private key file for SSH connection - local_key_path/gcp_key_name
-local_key_path = "~/.ssh"
+local_key_path = #"~/.ssh"
 
 # ID of the project you want to use
-project_id = "hazelcast-33" #"project_id"
+project_id =  #"project_id"
 
 ########### Optional ############
 
