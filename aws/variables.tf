@@ -44,19 +44,9 @@ variable "aws_connection_retries" {
   default = "3"
 }
 
-variable "hazelcast_version" {
-  type    = string
-  default = "4.0"
-}
-
-variable "hazelcast_aws_version" {
-  type    = string
-  default = "3.3"
-}
-
 variable "hazelcast_mancenter_version" {
   type    = string
-  default = "4.2020.08"
+  default = "4.2020.12"
 }
 
 variable "aws_ssh_user" {

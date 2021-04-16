@@ -11,14 +11,12 @@ member_count = "2"
 # If you are using free tier, using aws_instance_type other than "t2.micro" or "t3.micro" will cost money.
 aws_instance_type      = "t2.micro"
 aws_region             = "eu-central-1"
-aws_tag_key            = "Category"
-aws_tag_value          = "hazelcast-aws-discovery"
+aws_tag_key            = "hz-guide"
+aws_tag_value          = "terraform"
 aws_connection_retries = "3"
 
 prefix                      = "hazelcast"
-hazelcast_version           = "4.0"
-hazelcast_aws_version       = "3.3"
-hazelcast_mancenter_version = "4.2020.08"
+hazelcast_mancenter_version = "4.2020.12"
 
 # Username to use when connecting to VMs. Do not change this if you are using ubuntu images.
 aws_ssh_user = "ubuntu"

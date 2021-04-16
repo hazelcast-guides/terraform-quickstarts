@@ -2,7 +2,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "= 3.35.0"
+      version = "= 3.51.0"
 
     }
   }
@@ -40,9 +40,9 @@ resource "google_project_iam_custom_role" "discovery_role" {
 
 resource "google_project_iam_member" "project" {
   depends_on = [google_service_account.service_account]
-  project = var.project_id
-  role    = google_project_iam_custom_role.discovery_role.name
-  member  = "serviceAccount:${google_service_account.service_account.email}"
+  project    = var.project_id
+  role       = google_project_iam_custom_role.discovery_role.name
+  member     = "serviceAccount:${google_service_account.service_account.email}"
 }
 
 
@@ -135,9 +135,10 @@ resource "google_compute_instance" "hazelcast_member" {
 
   provisioner "remote-exec" {
     inline = [
-      "sudo apt-get update",
-      "sudo apt-get -y install openjdk-8-jdk wget",
-      "sleep 5"
+      "wget -qO - https://bintray.com/user/downloadSubjectPublicKey?username=hazelcast | sudo apt-key add -",
+      "echo \"deb http://dl.bintray.com/hazelcast/deb stable main\" | sudo tee -a /etc/apt/sources.list",
+      "sudo apt update && sudo apt -y install hazelcast",
+      "sleep 10"
     ]
   }
 
@@ -145,9 +146,9 @@ resource "google_compute_instance" "hazelcast_member" {
     inline = [
       "cd /home/${var.gcp_ssh_user}",
       "chmod 0755 start_gcp_hazelcast_member.sh",
-      "./start_gcp_hazelcast_member.sh ${var.hazelcast_version} ${var.hazelcast_gcp_version} ${var.gcp_label_key} ${var.gcp_label_value}",
+      "./start_gcp_hazelcast_member.sh ${var.gcp_label_key} ${var.gcp_label_value}",
       "sleep 10",
-      "tail -n 10 ./logs/hazelcast.logs"
+      "tail -n 10 /home/${var.gcp_ssh_user}/hazelcast.stdout.log"
     ]
   }
 
@@ -165,7 +166,7 @@ resource "google_compute_instance" "hazelcast_mancenter" {
       image = "debian-cloud/debian-9"
     }
   }
-  
+
   labels = {
     "${var.gcp_label_key}" = var.gcp_label_value
   }
@@ -208,7 +209,7 @@ resource "google_compute_instance" "hazelcast_mancenter" {
     inline = [
       "sudo apt-get update",
       "sudo apt-get -y install openjdk-8-jdk wget unzip",
-      "sleep 5"
+      "sleep 10"
     ]
   }
 
@@ -217,7 +218,7 @@ resource "google_compute_instance" "hazelcast_mancenter" {
       "cd /home/${var.gcp_ssh_user}",
       "chmod 0755 start_gcp_hazelcast_management_center.sh",
       "./start_gcp_hazelcast_management_center.sh ${var.hazelcast_mancenter_version} ${var.gcp_label_key} ${var.gcp_label_value}",
-      "sleep 20",
+      "sleep 10",
       "tail -n 10 ./logs/mancenter.stdout.log"
     ]
   }
