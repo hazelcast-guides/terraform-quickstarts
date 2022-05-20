@@ -2,10 +2,10 @@
 :templates-url: templates:ROOT:page$/
 :page-layout: tutorial
 :page-product: imdg
-:page-categories: Deployment, Terraform
+:page-categories: Deployment, Cloud Native
 :page-lang:
 :page-est-time: 30 mins
-:description: Learn how to deploy a Hazelcast cluster and Hazelcast Management Center on AWS, Azure, and GCP using Terraform.
+:description: Deploy a Hazelcast cluster and Hazelcast Management Center on AWS, Azure, or GCP using Terraform.
 
 == What You’ll Learn
 
