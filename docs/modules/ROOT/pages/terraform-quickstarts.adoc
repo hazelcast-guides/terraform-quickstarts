@@ -1,20 +1,19 @@
-
-
-:github-address: https://github.com/hazelcast-guides/terraform-quickstarts
+= Deploy a Hazelcast Cluster in the Cloud using Terraform
 :templates-url: templates:ROOT:page$/
-:tabs:
-
-= Deploying Hazelcast Cluster on Cloud using Terraform
-
-This guide will get you started with using Terraform to deploy Hazelcast clusters on cloud.
-
-include::{templates-url}/link-to-repo.adoc[]
+:page-layout: tutorial
+:page-product: imdg
+:page-categories: Deployment, Cloud Native
+:page-lang:
+:page-est-time: 30 mins
+:description: Deploy a Hazelcast cluster and Hazelcast Management Center on AWS, Azure, or GCP using Terraform.
 
 == What You’ll Learn
 
-You will learn how to deploy a Hazelcast cluster and Hazelcast Management Center on AWS, Azure, and GCP using Terraform. Terraform files have the necessary resources defined and all you need to do is setting your credentials to give Terraform permissions for creating resources on your behalf. After you run Terraform and create a cluster on cloud, you will be able to monitor the cluster using Hazelcast Management Center. You can modify the Terraform files to create new resources or destroy the whole cluster.
+{description}
 
-== Prerequisites
+Terraform files have the necessary resources defined and all you need to do is set your credentials to give Terraform permissions for creating resources on your behalf. After you run Terraform and create a cluster on cloud, you will be able to monitor the cluster using Hazelcast Management Center. You can modify the Terraform files to create new resources or destroy the whole cluster.
+
+== Before you Begin
 
 - https://www.terraform.io/downloads.html#undefined[Terraform v0.13+]
 
@@ -150,7 +149,7 @@ In `aws/terraform.tfvars`, you need to provide values for two variables.
 - `aws_key_name:` This is the name of the public-private key pair we created earlier.
 - `local_key_path:` This is the path we created the key pair at. 
 
-NOTE: In this guide we use an Ubuntu image and AWS creates a user with name `ubuntu` by default. So if you want to connect to your VMs via `ssh` you will have to use `ubuntu`. If you want to use another Linux distribution, please refer to https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html[AWS EC2 Managing users] and change the variable `aws_ssh_user` accordingly.
+NOTE: In this tutorial we use an Ubuntu image and AWS creates a user with name `ubuntu` by default. So if you want to connect to your VMs via `ssh` you will have to use `ubuntu`. If you want to use another Linux distribution, please refer to https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html[AWS EC2 Managing users] and change the variable `aws_ssh_user` accordingly.
 
 NOTE: The configuration defined in `aws/main.tf` assumes you have a default VPC in the region defined in `var.region`. AWS creates a default VPC for each activated region.  If you didn't delete it you can skip this note. Otherwise, please refer to https://docs.aws.amazon.com/vpc/latest/userguide/default-vpc.html#create-default-vpc[AWS Creating Default VPC].
 --
@@ -183,7 +182,7 @@ After you have authenticated your preferred cloud provider and provided necessar
 
 [NOTE]
 ====
-If you are using a paid subscription, you may be charged for the resources that will be created in this guide. However you can complete the guide using free tier subscriptions provided by https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc[AWS], https://azure.microsoft.com/en-us/free/[Azure] and https://cloud.google.com/free[GCP].
+If you are using a paid subscription, you may be charged for the resources that will be created in this tutorial. However you can complete the tutorial using free tier subscriptions provided by https://aws.amazon.com/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc[AWS], https://azure.microsoft.com/en-us/free/[Azure] and https://cloud.google.com/free[GCP].
 ====
 
 Initialize Terraform.
@@ -223,7 +222,7 @@ mancenter_public_ip:8080
 
 You can change the input variables in `variables.tf` file by updating `terraform.tfvars`. After your changes the new desired state will be applied by `terraform apply`. You can use `ssh` to examine VMs by using the IPs provided in the output of `terraform apply`. If you cannot find the outputs you can run 'terraform show' to see the current state of your configuration.
 
-When you are done with the guide, run the following to delete all the resources created.
+When you are done with the tutorial, run the following to delete all the resources created.
 [source, shell]
 ----
 $ terraform destroy
@@ -231,9 +230,9 @@ $ terraform destroy
 
 == Summary
 
-In this guide we used Terraform to create Hazelcast cluster on cloud. We defined the state we wanted in `main.tf` and Terraform applied our desired state on our cloud provider. Then we used Hazelcast Management Center to monitor the state of our cluster. We changed the desired state by updating `terraform.tfvars` file and Terraform applied our changes when we run `terraform apply`. 
+In this tutorial, you used Terraform to create Hazelcast cluster on cloud. You defined the state we wanted in `main.tf` and Terraform applied the desired state on the cloud provider. Then, you used Hazelcast Management Center to monitor the state of the cluster. You changed the desired state by updating `terraform.tfvars` file and Terraform applied the changes when by running `terraform apply`. 
 
 == See Also
 
-- xref:kubernetes-embedded:ROOT:index.adoc[Embedded Hazelcast on Kubernetes]
-- xref:istio:ROOT:index.adoc[Hazelcast with Istio Service Mesh]
+- xref:kubernetes-embedded.adoc[]
+- xref:istio.adoc[]
